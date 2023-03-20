@@ -12,8 +12,8 @@ public class Game : MonoBehaviour
 
     public bool simulationEnabled = false;
 
-    public int simNR=2000;  //number of generations, this should be used to add nota 6 functionality
-
+    public int simNR=50;  //number of generations, this should be used to add nota 6 functionality
+    public int ct=0;
 
     Cell[,] grid = new Cell[SCREEN_WIDTH, SCREEN_HEIGHT];
 
@@ -28,10 +28,16 @@ public class Game : MonoBehaviour
                     timer = 0f;
                     CountNeighbors();
                     PopulationControl();
+                    ct++;
+                    if(ct==simNR){
+                        simulationEnabled=false;
+                        ct=0;
+                    }
                 }else{
                     timer += Time.deltaTime;
                 }
 
+                
             }
         }
 
@@ -71,14 +77,27 @@ public class Game : MonoBehaviour
         if(Input.GetKeyUp(KeyCode.P)){
             //pause simulation
             simulationEnabled=false;
+            ct=0;
         }
         if(Input.GetKeyUp(KeyCode.B)){
             //build simulation/resume
             simulationEnabled=true;
         }
-        if(Input.GetKeyUp(KeyCode.C)){
-            //first try at changing the generations number through keycode user input
+        if(Input.GetKeyUp(KeyCode.A)){
+            //click A to choose 5 gens
+            simNR=5;
+        }
+        if(Input.GetKeyUp(KeyCode.S)){
+            //click S to choose 10 gens
             simNR=10;
+        }
+        if(Input.GetKeyUp(KeyCode.D)){
+            //click D to choose 100 gens
+            simNR=100;
+        }
+        if(Input.GetKeyUp(KeyCode.F)){
+            //click F to choose 1000 gens
+            simNR=1000;
         }
     }
 
