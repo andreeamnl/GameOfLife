@@ -75,13 +75,11 @@ public class Game : MonoBehaviour
             }
         }
         if(Input.GetKeyUp(KeyCode.P)){
-            //pause simulation
-            simulationEnabled=false;
-            ct=0;
-        }
-        if(Input.GetKeyUp(KeyCode.B)){
-            //build simulation/resume
-            simulationEnabled=true;
+            //start/pause simulation
+            simulationEnabled=(!simulationEnabled);
+            if(!simulationEnabled){
+                ct=0;
+            }
         }
         if(Input.GetKeyUp(KeyCode.A)){
             //click A to choose 5 gens
