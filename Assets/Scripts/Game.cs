@@ -10,6 +10,10 @@ public class Game : MonoBehaviour
     public float speed = 0.1f;
     private float timer=0;
 
+    public bool simulationEnabled = false;
+
+    public int simNR=2000;  //number of generations, this should be used to add nota 6 functionality
+
 
     Cell[,] grid = new Cell[SCREEN_WIDTH, SCREEN_HEIGHT];
 
@@ -17,17 +21,21 @@ public class Game : MonoBehaviour
         PlaceCells();
     }
     void Update(){
+        userInput();
 
-        if (timer>=speed){
-            timer = 0f;
-            CountNeighbors();
-            PopulationControl();
-        }else{
-            timer += Time.deltaTime;
+        if (simulationEnabled){
+               if (timer>=speed){
+                    timer = 0f;
+                    CountNeighbors();
+                    PopulationControl();
+                }else{
+                    timer += Time.deltaTime;
+                }
+
+            }
         }
 
 
-    }
 
     void PlaceCells(){
         for(int y = 0; y<SCREEN_HEIGHT;y++){
@@ -42,10 +50,36 @@ public class Game : MonoBehaviour
     bool RandomAliveCell(){
         int rand = UnityEngine.Random.Range(0,100);
         
-        if (rand> 75){
+        if (rand> 55){
             return true;
         }
         return false;
+    }
+
+    void userInput(){
+        if (Input.GetMouseButtonDown(0)){
+            Vector2 mousePoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            int x = Mathf.RoundToInt(mousePoint.x);
+            int y = Mathf.RoundToInt(mousePoint.y);
+             
+            if (x>= 0 && y>= 0 && x<SCREEN_WIDTH && y<SCREEN_HEIGHT){
+                //in bounds
+                grid[x,y].SetAlive(!grid[x,y].isAlive);
+            }
+        }
+        if(Input.GetKeyUp(KeyCode.P)){
+            //pause simulation
+            simulationEnabled=false;
+        }
+        if(Input.GetKeyUp(KeyCode.B)){
+            //build simulation/resume
+            simulationEnabled=true;
+        }
+        if(Input.GetKeyUp(KeyCode.C)){
+            //first try at changing the generations number through keycode user input
+            simNR=10;
+        }
     }
 
 
@@ -141,5 +175,7 @@ public class Game : MonoBehaviour
             }
         }
     }
+
+
 
 }
