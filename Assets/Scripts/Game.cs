@@ -13,7 +13,7 @@ public class Game : MonoBehaviour
     public bool simulationEnabled = false;
 
     public int simNR=50;  //number of generations, this should be used to add nota 6 functionality
-    public int ct=0;
+    public int ct=0;     //generations number used in counter
 
     Cell[,] grid = new Cell[SCREEN_WIDTH, SCREEN_HEIGHT];
 
@@ -56,7 +56,7 @@ public class Game : MonoBehaviour
     bool RandomAliveCell(){
         int rand = UnityEngine.Random.Range(0,100);
         
-        if (rand> 55){
+        if (rand> 75){
             return true;
         }
         return false;

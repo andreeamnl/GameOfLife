@@ -259,9 +259,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cfb7501ab4574a45a003c40a6b7e68a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 0.1
+  speed: 0.25
   simulationEnabled: 0
   simNR: 2000
+  ct: 0
 --- !u!4 &1691675644
 Transform:
   m_ObjectHideFlags: 0
