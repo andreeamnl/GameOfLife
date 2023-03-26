@@ -178,14 +178,27 @@ public class Game : MonoBehaviour
                 //Any cell alive with 2 or 3 neighbors survives
                 //Any dead cell with 3 alive neighbors rises from the dead
                 //All other live cells die in the next generation and all other cells stay dead
+
+                // if(grid[x,y].isAlive){
+                //     if(grid[x,y].numNeighbors != 2 && grid[x,y].numNeighbors !=3){
+                //         grid[x,y].SetAlive(false);
+                //     }
+                // }
+                // else{
+                //     //dead cell
+                //     if (grid[x,y].numNeighbors==3){
+                //         grid[x,y].SetAlive(true);
+                //     }
+                // }
+
                 if(grid[x,y].isAlive){
-                    if(grid[x,y].numNeighbors != 2 && grid[x,y].numNeighbors !=3){
+                    if(grid[x,y].numNeighbors > 3){
                         grid[x,y].SetAlive(false);
                     }
                 }
                 else{
                     //dead cell
-                    if (grid[x,y].numNeighbors==3){
+                    if (grid[x,y].numNeighbors==3 || grid[x,y].numNeighbors==7){
                         grid[x,y].SetAlive(true);
                     }
                 }

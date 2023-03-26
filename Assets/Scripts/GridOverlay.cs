@@ -7,7 +7,7 @@ public class GridOverlay : MonoBehaviour
     private Material lineMaterial;
 
     public bool showMain = true;
-    public bool showSub  = false;
+    public bool showSub  = true;
 
     public int gridSizeX;
     public int gridSizeY;
@@ -19,8 +19,9 @@ public class GridOverlay : MonoBehaviour
     public float smallStep;
     public float largeStep;
 
-    //public Color mainColor = new Color(0f,1f,0f,1f);
-    public Color subColor = new Color(0f, 0.5f, 0f, 1f);
+    public Color mainColor = new Color(105f,105f,105f,255f);
+    //public Color subColor = new Color(0f, 0.5f, 0f, 1f);
+    public Color subColor = new Color(105f, 105f, 105f, 255f);
 
     void CreateLineMaterial (){
         if(!lineMaterial){

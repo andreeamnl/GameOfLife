@@ -160,7 +160,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.5471698, g: 0.04903879, b: 0.04903879, a: 0}
+  m_BackGroundColor: {r: 0.5294118, g: 0.09803922, b: 0.09803922, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -221,7 +221,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   showMain: 1
-  showSub: 0
+  showSub: 1
   gridSizeX: 64
   gridSizeY: 48
   startX: -0.5
@@ -229,7 +229,8 @@ MonoBehaviour:
   startZ: 0
   smallStep: 1
   largeStep: 8
-  subColor: {r: 0, g: 0.05186768, b: 0.5019608, a: 1}
+  mainColor: {r: 0.4117647, g: 0.4117647, b: 0.4117647, a: 1}
+  subColor: {r: 0.4156863, g: 0.40784317, b: 0.40784317, a: 1}
 --- !u!1 &1691675642
 GameObject:
   m_ObjectHideFlags: 0
@@ -259,7 +260,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cfb7501ab4574a45a003c40a6b7e68a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 0.25
+  speed: 0.15
   simulationEnabled: 0
   simNR: 2000
   ct: 0
