@@ -15,6 +15,11 @@ public class Game : MonoBehaviour
     public int simNR=50;  //number of generations, this should be used to add nota 6 functionality
     public int ct=0;     //generations number used in counter
 
+    public bool button2Down = false, button2Up = false;
+
+    public int zoneX1 = 0, zoneY1 = 0;
+    public int zoneX2 = 0, zoneY2 = 0;
+
     Cell[,] grid = new Cell[SCREEN_WIDTH, SCREEN_HEIGHT];
 
     void Start(){
@@ -22,6 +27,23 @@ public class Game : MonoBehaviour
     }
     void Update(){
         userInput();
+
+        if (button2Down && button2Up){
+            int i,j,n,m,k,l;
+            if (zoneX1 < zoneX2) {k = zoneX1; n = zoneX2;}
+            else {k = zoneX2; n = zoneX1;}
+
+            if (zoneY1 < zoneY2) {l = zoneY1; m = zoneY2;}
+            else {l = zoneY2; m = zoneY1;}
+
+            for (i = k; i <= n; i++){
+                for (j = l; j <= m; j++)
+                    grid[i,j].isInZone = true;
+            }
+
+            button2Down = false;
+            button2Up = false;
+        }
 
         if (simulationEnabled){
                if (timer>=speed){
@@ -39,6 +61,7 @@ public class Game : MonoBehaviour
 
                 
             }
+            
         }
 
 
@@ -74,6 +97,31 @@ public class Game : MonoBehaviour
                 grid[x,y].SetAlive(!grid[x,y].isAlive);
             }
         }
+
+        if (Input.GetMouseButtonDown(1)){
+            Vector2 mousePoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            zoneX1 = Mathf.RoundToInt(mousePoint.x);
+            zoneY1 = Mathf.RoundToInt(mousePoint.y);
+            button2Down = true;
+        }
+        
+        if (Input.GetMouseButtonUp(1)){
+            Vector2 mousePoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            zoneX2 = Mathf.RoundToInt(mousePoint.x);
+            zoneY2 = Mathf.RoundToInt(mousePoint.y);
+            button2Up = true;
+
+            if (zoneX1 > SCREEN_WIDTH) {button2Down = false; button2Up = false;}
+            if (zoneX1 < 0) {button2Down = false; button2Up = false;}
+            if (zoneX2 > SCREEN_WIDTH) {button2Down = false; button2Up = false;}
+            if (zoneX2< 0) {button2Down = false; button2Up = false;}
+            if (zoneY1 > SCREEN_HEIGHT) {button2Down = false; button2Up = false;}
+            if (zoneY1 < 0) {button2Down = false; button2Up = false;}
+            if (zoneY2 > SCREEN_HEIGHT) {button2Down = false; button2Up = false;}
+            if (zoneY2 < 0) {button2Down = false; button2Up = false;}
+        }
+
+
         if(Input.GetKeyUp(KeyCode.P)){
             //start/pause simulation
             simulationEnabled=(!simulationEnabled);
@@ -96,6 +144,14 @@ public class Game : MonoBehaviour
         if(Input.GetKeyUp(KeyCode.F)){
             //click F to choose 1000 gens
             simNR=1000;
+        }
+        if(Input.GetKeyUp(KeyCode.R)){
+            int i,j;
+            //remove all zones
+            for (i = 0; i < SCREEN_WIDTH; i++){
+                for (j = 0; j < SCREEN_HEIGHT; j++)
+                    grid[i,j].isInZone = false;
+            }
         }
     }
 
@@ -191,17 +247,36 @@ public class Game : MonoBehaviour
                 //     }
                 // }
 
-                if(grid[x,y].isAlive){
-                    if(grid[x,y].numNeighbors > 3){
-                        grid[x,y].SetAlive(false);
+                //long life rule zone
+                if (grid[x,y].isInZone){
+                    if(grid[x,y].isAlive){
+                        if(grid[x,y].numNeighbors != 5){
+                            grid[x,y].SetAlive(false);
+                        }
+                    }
+                    else{
+                        //dead cell
+                        if (grid[x,y].numNeighbors==3 || grid[x,y].numNeighbors==4 || grid[x,y].numNeighbors==5){
+                            grid[x,y].SetAlive(true);
+                        }
                     }
                 }
                 else{
-                    //dead cell
-                    if (grid[x,y].numNeighbors==3 || grid[x,y].numNeighbors==7){
-                        grid[x,y].SetAlive(true);
+                    if(grid[x,y].isAlive){
+                        if(grid[x,y].numNeighbors > 3){
+                            grid[x,y].SetAlive(false);
+                        }
                     }
+                    else{
+                        //dead cell
+                        if (grid[x,y].numNeighbors==3 || grid[x,y].numNeighbors==7){
+                            grid[x,y].SetAlive(true);
+                        }
+                    }
+
                 }
+
+                
             }
         }
     }

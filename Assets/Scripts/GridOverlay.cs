@@ -65,6 +65,7 @@ public class GridOverlay : MonoBehaviour
                 GL.Vertex3(startX+x, startY, startZ);
                 GL.Vertex3(startX+x, startY+gridSizeY, startZ);
             }
+
         }
 
         if(showMain){
