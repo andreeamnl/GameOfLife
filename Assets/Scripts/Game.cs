@@ -1,32 +1,154 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class Game : MonoBehaviour
 {
     private static int SCREEN_WIDTH = 64;    //1024 pixels
     private static int SCREEN_HEIGHT = 48;   //768 pixels
 
-    public float speed = 0.1f;
+    public float speed = 0.15f;
     private float timer=0;
 
     public bool simulationEnabled = false;
 
-    public int simNR=50;  //number of generations, this should be used to add nota 6 functionality
-    public int ct=0;     //generations number used in counter
+    public long simNR=0;  //number of generations, this should be used to add nota 6 functionality
+    public long ct=0;     //generations number used in counter
 
-    public bool button2Down = false, button2Up = false;
+    private bool button1Down = false, button2Down = false, button2Up = false;
 
-    public int zoneX1 = 0, zoneY1 = 0;
-    public int zoneX2 = 0, zoneY2 = 0;
+    private int zoneX1 = 0, zoneY1 = 0;
+    private int zoneX2 = 0, zoneY2 = 0;
 
     Cell[,] grid = new Cell[SCREEN_WIDTH, SCREEN_HEIGHT];
 
+    private Vector2 _startPos;
+    private Vector2 _endPos;
+    private float _depth = -5f;
+    private Material _material;
+    private List<Rect> _rectangles = new List<Rect>();
+
+    public Button buttonClear, buttonZone, buttonRandom, buttonCounter;
+    public TMP_InputField generationsField;
+    public TMP_Text counterField; 
+    public Toggle simulationToggle;
+    public Slider speedSlider;
+
     void Start(){
         PlaceCells();
+
+        Shader shader = Shader.Find("Hidden/Internal-Colored");
+        _material = new Material(shader);
+        _material.hideFlags = HideFlags.HideAndDontSave;
+        _material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        _material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        _material.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+
+        
+        simulationToggle.onValueChanged.AddListener(delegate {
+                ToggleValueChanged(simulationToggle);
+            });
+
+        buttonClear.onClick.AddListener(ClearScreen);
+        buttonRandom.onClick.AddListener(Randomize);
+        buttonZone.onClick.AddListener(ClearZones);
+        buttonCounter.interactable = false;
+        generationsField.onEndEdit.AddListener(SetGenerations);
+        speedSlider.maxValue = 0.4f;
+        speedSlider.value = 0.15f;
+        speedSlider.onValueChanged.AddListener(delegate {ChangeSpeed();});
     }
+
+    void ToggleValueChanged(Toggle change)
+    {
+        simulationEnabled = change.isOn;
+    }
+
+    void ChangeSpeed(){
+        speed = speedSlider.value;
+    }
+
+    void SetGenerations(string text){
+        if(text == ""){
+            simNR = 0;
+            generationsField.text = "0";
+        }
+        else{
+            simNR = long.Parse(text);
+        long limit = 9999999999;
+        if(simNR > limit){
+            simNR = limit;
+            generationsField.text = "9999999999";
+        }
+        else if(simNR <= 0){
+            simNR = 0;
+            generationsField.text = "0";
+        }
+        }
+        
+    }
+
+    void OnRenderObject()
+    {
+        // Draw all the rectangles in the list
+        _material.SetPass(0);
+        GL.PushMatrix();
+        GL.LoadOrtho();
+        foreach (Rect rect in _rectangles)
+        {
+            GL.Begin(GL.QUADS);
+            GL.Color(new Color(1f, 1f, 1f, 0.1f));
+            GL.Vertex3(rect.xMin, rect.yMin, -5);
+            GL.Vertex3(rect.xMax, rect.yMin, -5);
+            GL.Vertex3(rect.xMax, rect.yMax, -5);
+            GL.Vertex3(rect.xMin, rect.yMax, -5);
+            GL.End();
+        }
+        GL.PopMatrix();
+    }
+
     void Update(){
         userInput();
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            _startPos = Input.mousePosition;
+        }
+        else if (Input.GetMouseButtonUp(1))
+        {
+            _endPos = Input.mousePosition;
+            // Convert the start and end positions of the rectangle to clip space
+            Vector3 startClipPos = Camera.main.ScreenToViewportPoint(new Vector3(_startPos.x, _startPos.y, _depth));
+            Vector3 endClipPos = Camera.main.ScreenToViewportPoint(new Vector3(_endPos.x, _endPos.y, _depth));
+            Rect rect = new Rect(startClipPos.x, startClipPos.y, endClipPos.x - startClipPos.x, endClipPos.y - startClipPos.y);
+            
+
+            Vector2 strt = Camera.main.ScreenToWorldPoint(_startPos);
+            Vector2 end = Camera.main.ScreenToWorldPoint(_endPos);
+            int rectX1 = Mathf.RoundToInt(strt.x);
+            int rectY1 = Mathf.RoundToInt(strt.y);
+            int rectX2 = Mathf.RoundToInt(end.x);
+            int rectY2 = Mathf.RoundToInt(end.y);
+
+            if ((rectX1 <= SCREEN_WIDTH) && (rectX1 >= 0) 
+                && (rectX2 <= SCREEN_WIDTH) && (rectX2 >= 0) 
+                && (rectY1 <= SCREEN_HEIGHT) && (rectY1 >= 0) 
+                && (rectY2 <= SCREEN_HEIGHT) && (rectY2 >= 0)) {_rectangles.Add(rect); }
+        }
+
+        if (((Input.GetAxis("Mouse X") != 0) || (Input.GetAxis("Mouse Y") != 0) )&& button1Down){
+            Vector2 mousePoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+            int x = Mathf.RoundToInt(mousePoint.x);
+            int y = Mathf.RoundToInt(mousePoint.y);
+             
+            if (x>= 0 && y>= 0 && x<SCREEN_WIDTH && y<SCREEN_HEIGHT){
+                //in bounds
+                grid[x,y].SetAlive(true);
+            }
+        }
 
         if (button2Down && button2Up){
             int i,j,n,m,k,l;
@@ -51,19 +173,30 @@ public class Game : MonoBehaviour
                     CountNeighbors();
                     PopulationControl();
                     ct++;
-                    if(ct==simNR){
+                    counterField.text = ct.ToString();
+                    if(ct>=simNR){
                         simulationEnabled=false;
+                        simulationToggle.isOn = false;
                         ct=0;
+                        return;
                     }
-                }else{
+                }
+                else{
                     timer += Time.deltaTime;
                 }
 
                 
-            }
-            
         }
+            
+    }
 
+    void OnDisable()
+    {
+        if (_material != null)
+        {
+            DestroyImmediate(_material);
+        }
+    }
 
 
     void PlaceCells(){
@@ -76,6 +209,15 @@ public class Game : MonoBehaviour
         }
     }
 
+    void ClearScreen(){
+        int i,j;
+            //remove all cells
+        for (i = 0; i < SCREEN_WIDTH; i++){
+            for (j = 0; j < SCREEN_HEIGHT; j++)
+                grid[i,j].SetAlive(false);
+        }
+    }
+
     bool RandomAliveCell(){
         int rand = UnityEngine.Random.Range(0,100);
         
@@ -85,8 +227,26 @@ public class Game : MonoBehaviour
         return false;
     }
 
+    void Randomize(){
+        int i,j;
+            for (i = 0; i < SCREEN_WIDTH; i++)
+                for (j = 0; j < SCREEN_HEIGHT; j++)
+                    grid[i,j].SetAlive(RandomAliveCell());
+    }
+
+    void ClearZones(){
+        _rectangles.Clear();
+        int i,j;
+        //remove all zones
+        for (i = 0; i < SCREEN_WIDTH; i++){
+            for (j = 0; j < SCREEN_HEIGHT; j++)
+                {grid[i,j].isInZone = false;}
+        }
+    }
+
     void userInput(){
         if (Input.GetMouseButtonDown(0)){
+            button1Down = true;
             Vector2 mousePoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
             int x = Mathf.RoundToInt(mousePoint.x);
@@ -96,6 +256,10 @@ public class Game : MonoBehaviour
                 //in bounds
                 grid[x,y].SetAlive(!grid[x,y].isAlive);
             }
+        }
+
+        if (Input.GetMouseButtonUp(0)){
+            button1Down = false;
         }
 
         if (Input.GetMouseButtonDown(1)){
@@ -125,33 +289,17 @@ public class Game : MonoBehaviour
         if(Input.GetKeyUp(KeyCode.P)){
             //start/pause simulation
             simulationEnabled=(!simulationEnabled);
-            if(!simulationEnabled){
-                ct=0;
-            }
-        }
-        if(Input.GetKeyUp(KeyCode.A)){
-            //click A to choose 5 gens
-            simNR=5;
-        }
-        if(Input.GetKeyUp(KeyCode.S)){
-            //click S to choose 10 gens
-            simNR=10;
-        }
-        if(Input.GetKeyUp(KeyCode.D)){
-            //click D to choose 100 gens
-            simNR=100;
-        }
-        if(Input.GetKeyUp(KeyCode.F)){
-            //click F to choose 1000 gens
-            simNR=1000;
+            simulationToggle.isOn = simulationEnabled;
         }
         if(Input.GetKeyUp(KeyCode.R)){
-            int i,j;
-            //remove all zones
-            for (i = 0; i < SCREEN_WIDTH; i++){
-                for (j = 0; j < SCREEN_HEIGHT; j++)
-                    grid[i,j].isInZone = false;
-            }
+            //randomize cells
+            Randomize();
+        }
+        if(Input.GetKeyUp(KeyCode.C)){
+            ClearScreen();
+        }
+        if(Input.GetKeyUp(KeyCode.Z)){
+            ClearZones();
         }
     }
 
@@ -231,21 +379,9 @@ public class Game : MonoBehaviour
     void PopulationControl(){
         for (int y=0; y<SCREEN_HEIGHT; y++){
             for(int x=0; x<SCREEN_WIDTH; x++){
-                //Any cell alive with 2 or 3 neighbors survives
-                //Any dead cell with 3 alive neighbors rises from the dead
+                //Any cell alive with 1, 2 or 3 neighbors survives
+                //Any dead cell with 3 or 7 alive neighbors rises from the dead
                 //All other live cells die in the next generation and all other cells stay dead
-
-                // if(grid[x,y].isAlive){
-                //     if(grid[x,y].numNeighbors != 2 && grid[x,y].numNeighbors !=3){
-                //         grid[x,y].SetAlive(false);
-                //     }
-                // }
-                // else{
-                //     //dead cell
-                //     if (grid[x,y].numNeighbors==3){
-                //         grid[x,y].SetAlive(true);
-                //     }
-                // }
 
                 //long life rule zone
                 if (grid[x,y].isInZone){
